@@ -73,6 +73,7 @@ jobs:
       - name: Fetch Chromium source
         shell: bash
         run: |
+          mkdir -p build/download_cache
           python3 utils/downloads.py retrieve -i downloads.ini -c build/download_cache
           python3 utils/downloads.py unpack -i downloads.ini -c build/download_cache build/src
 
