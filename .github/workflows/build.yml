@@ -128,6 +128,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path build\src\out\Default\extensions | Out-Null
           Copy-Item custom\external-extensions\*.json build\src\out\Default\extensions\
 
+      - name: Bootstrap depot_tools
+        shell: bash
+        run: gclient
+
       - name: Generate build files (gn gen)
         shell: bash
         working-directory: build/src
