@@ -70,6 +70,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3-dev
 
+      - name: Debug - show real CLI args
+        shell: bash
+        run: |
+          python3 utils/downloads.py retrieve --help
+          echo "-----"
+          python3 utils/downloads.py unpack --help
+
+
       - name: Fetch Chromium source
         shell: bash
         run: |
