@@ -73,9 +73,12 @@ jobs:
       - name: Debug - show real CLI args
         shell: bash
         run: |
-          python3 utils/downloads.py retrieve --help
-          echo "-----"
-          python3 utils/downloads.py unpack --help
+          echo "=== patches.py ==="
+          python3 utils/patches.py --help
+          echo "=== domain_substitution.py apply ==="
+          python3 utils/domain_substitution.py apply --help
+          echo "=== prune_binaries.py ==="
+          python3 utils/prune_binaries.py --help
 
 
       - name: Fetch Chromium source
