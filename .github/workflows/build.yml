@@ -73,22 +73,26 @@ jobs:
       - name: Fetch Chromium source
         shell: bash
         run: |
-          python3 utils/downloads.py retrieve -o build/download_cache -c utils/downloads.ini
-          python3 utils/downloads.py unpack -o build/download_cache -c utils/downloads.ini build/src
+          python3 utils/downloads.py retrieve -i downloads.ini -c build/download_cache
+          python3 utils/downloads.py unpack -i downloads.ini -c build/download_cache build/src
 
       - name: Apply ungoogled-chromium + custom patches
         shell: bash
         run: |
-          python3 utils/patches.py apply build/src patches/
           if [ -d custom/patches ]; then
-            python3 utils/patches.py apply build/src custom/patches/
+            python3 utils/patches.py apply build/src patches/ custom/patches/
+          else
+            python3 utils/patches.py apply build/src patches/
           fi
 
       - name: Domain substitution
         shell: bash
         run: |
-          python3 utils/domain_substitution.py apply -r domain_regex.list \
-            -f domain_substitution.list -o build/domsub_cache.tar.gz build/src
+          python3 utils/domain_substitution.py apply \
+            -r domain_regex.list \
+            -f domain_substitution.list \
+            -c build/domsub_cache.tar.gz \
+            build/src
 
       - name: Prune binaries
         shell: bash
