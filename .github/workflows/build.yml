@@ -70,20 +70,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3-dev
 
-      - name: Debug - show real CLI args
-        shell: bash
-        run: |
-          echo "=== patches.py ==="
-          python3 utils/patches.py --help
-          echo "=== domain_substitution.py apply ==="
-          python3 utils/domain_substitution.py apply --help
-          echo "=== prune_binaries.py ==="
-          python3 utils/prune_binaries.py --help
-          
-      - name: Debug - patches apply help
-        shell: bash
-        run: python3 utils/patches.py apply --help
-
       - name: Fetch Chromium source
         shell: bash
         run: |
