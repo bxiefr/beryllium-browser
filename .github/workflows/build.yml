@@ -1,0 +1,151 @@
+name: Build Beryllium Browser
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+          - os: windows-latest
+            platform: windows
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Read Chromium version
+        id: chromium_version
+        shell: bash
+        run: echo "version=$(cat chromium_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache depot_tools
+        uses: actions/cache@v4
+        with:
+          path: depot_tools
+          key: depot-tools-${{ matrix.platform }}
+
+      - name: Cache Chromium source + build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/src
+            ~/.cache/ccache
+          key: chromium-src-${{ matrix.platform }}-${{ steps.chromium_version.outputs.version }}
+
+      - name: Get depot_tools
+        shell: bash
+        run: |
+          if [ ! -d depot_tools ]; then
+            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          fi
+
+      - name: Add depot_tools to PATH (Linux)
+        if: matrix.platform == 'linux'
+        run: echo "$GITHUB_WORKSPACE/depot_tools" >> "$GITHUB_PATH"
+
+      - name: Add depot_tools to PATH (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: echo "$env:GITHUB_WORKSPACE\depot_tools" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3-dev
+
+      - name: Fetch Chromium source
+        shell: bash
+        run: |
+          python3 utils/downloads.py retrieve -o build/download_cache -c utils/downloads.ini
+          python3 utils/downloads.py unpack -o build/download_cache -c utils/downloads.ini build/src
+
+      - name: Apply ungoogled-chromium + custom patches
+        shell: bash
+        run: |
+          python3 utils/patches.py apply build/src patches/
+          if [ -d custom/patches ]; then
+            python3 utils/patches.py apply build/src custom/patches/
+          fi
+
+      - name: Domain substitution
+        shell: bash
+        run: |
+          python3 utils/domain_substitution.py apply -r domain_regex.list \
+            -f domain_substitution.list -o build/domsub_cache.tar.gz build/src
+
+      - name: Prune binaries
+        shell: bash
+        run: |
+          python3 utils/prune_binaries.py build/src pruning.list
+
+      - name: Configure GN args (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p build/src/out/Default
+          cp flags.gn build/src/out/Default/args.gn
+          echo 'target_os = "linux"' >> build/src/out/Default/args.gn
+
+      - name: Configure GN args (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build\src\out\Default | Out-Null
+          Copy-Item flags.gn build\src\out\Default\args.gn
+          Add-Content build\src\out\Default\args.gn '`ntarget_os = "win"'
+
+      - name: Install default extension config (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p build/src/out/Default/extensions
+          cp custom/external-extensions/*.json build/src/out/Default/extensions/
+
+      - name: Install default extension config (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build\src\out\Default\extensions | Out-Null
+          Copy-Item custom\external-extensions\*.json build\src\out\Default\extensions\
+
+      - name: Generate build files (gn gen)
+        shell: bash
+        working-directory: build/src
+        run: gn gen out/Default
+
+      - name: Build Chromium
+        shell: bash
+        working-directory: build/src
+        run: autoninja -C out/Default chrome
+
+      - name: Package (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          tar -czf beryllium-browser-linux.tar.gz -C build/src/out/Default .
+
+      - name: Package (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build\src\out\Default\* -DestinationPath beryllium-browser-windows.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beryllium-browser-${{ matrix.platform }}
+          path: beryllium-browser-${{ matrix.platform }}.*
