@@ -79,7 +79,10 @@ jobs:
           python3 utils/domain_substitution.py apply --help
           echo "=== prune_binaries.py ==="
           python3 utils/prune_binaries.py --help
-
+          
+      - name: Debug - patches apply help
+        shell: bash
+        run: python3 utils/patches.py apply --help
 
       - name: Fetch Chromium source
         shell: bash
