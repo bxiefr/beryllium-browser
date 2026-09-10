@@ -150,6 +150,12 @@ jobs:
           python3 tools/gn/bootstrap/bootstrap.py -o out/Default/gn --skip-generate-buildfiles
           echo "$PWD/out/Default" >> "$GITHUB_PATH"
 
+      - name: Install sysroot (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: python3 build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
+
       - name: Generate build files (gn gen)
         shell: bash
         working-directory: build/src
