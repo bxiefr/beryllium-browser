@@ -135,8 +135,12 @@ jobs:
       - name: Debug - find gn binary
         shell: bash
         run: |
-          find build/src -iname "gn" -type f 2>/dev/null || true
-          find build/src -iname "gn.exe" -type f 2>/dev/null || true
+          echo "=== downloads.ini content ==="
+          cat downloads.ini
+          echo "=== buildtools dir ==="
+          find build/src/buildtools -maxdepth 3 2>/dev/null || echo "no buildtools dir"
+          echo "=== any gn-like files ==="
+          find build/src -iname "gn*" -not -path "*/third_party/*" 2>/dev/null || true
 
       - name: Generate build files (gn gen)
         shell: bash
