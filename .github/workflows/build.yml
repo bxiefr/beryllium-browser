@@ -132,6 +132,12 @@ jobs:
         shell: bash
         run: gclient
 
+      - name: Debug - find gn binary
+        shell: bash
+        run: |
+          find build/src -iname "gn" -type f 2>/dev/null || true
+          find build/src -iname "gn.exe" -type f 2>/dev/null || true
+
       - name: Generate build files (gn gen)
         shell: bash
         working-directory: build/src
