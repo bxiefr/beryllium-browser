@@ -106,8 +106,12 @@ jobs:
           mkdir -p build/src/out/Default
           cp flags.gn build/src/out/Default/args.gn
           echo 'target_os = "linux"' >> build/src/out/Default/args.gn
-          echo 'enable_rust = false' >> build/src/out/Default/args.gn
-          echo 'pdf_enable_rust_png = false' >> build/src/out/Default/args.gn
+
+      - name: Install Rust toolchain (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: python3 tools/rust/update_rust.py
 
       - name: Configure GN args (Windows)
         if: matrix.platform == 'windows'
