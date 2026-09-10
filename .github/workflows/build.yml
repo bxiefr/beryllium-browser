@@ -111,7 +111,12 @@ jobs:
         if: matrix.platform == 'linux'
         shell: bash
         working-directory: build/src
-        run: python3 tools/rust/update_rust.py
+        run: |
+          for i in 1 2 3 4 5; do
+            python3 tools/rust/update_rust.py && break
+            echo "Retry $i failed, waiting 30s..."
+            sleep 30
+          done          
 
       - name: Configure GN args (Windows)
         if: matrix.platform == 'windows'
