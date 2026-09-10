@@ -107,6 +107,7 @@ jobs:
           cp flags.gn build/src/out/Default/args.gn
           echo 'target_os = "linux"' >> build/src/out/Default/args.gn
           echo 'enable_rust = false' >> build/src/out/Default/args.gn
+          echo 'pdf_enable_rust_png = false' >> build/src/out/Default/args.gn
 
       - name: Configure GN args (Windows)
         if: matrix.platform == 'windows'
