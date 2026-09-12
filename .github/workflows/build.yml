@@ -123,6 +123,13 @@ jobs:
         working-directory: build/src
         run: python3 tools/clang/scripts/update.py
 
+      - name: Debug - find node fetch script
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: |
+          find third_party/node -maxdepth 2 -iname "*.py" 2>/dev/null || echo "no third_party/node dir"
+
       - name: Domain substitution
         shell: bash
         run: |
