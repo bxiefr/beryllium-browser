@@ -112,11 +112,9 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          for i in 1 2 3 4 5; do
-            python3 tools/rust/update_rust.py && break
-            echo "Retry $i failed, waiting 30s..."
-            sleep 30
-          done          
+          python3 tools/rust/update_rust.py
+          echo "=== rust-toolchain dir contents ==="
+          find third_party/rust-toolchain -maxdepth 2 2>/dev/null || echo "directory does not exist"
 
       - name: Configure GN args (Windows)
         if: matrix.platform == 'windows'
