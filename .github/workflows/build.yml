@@ -70,6 +70,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3-dev
 
+      - name: Bootstrap depot_tools
+        shell: bash
+        run: gclient
+
       - name: Fetch Chromium source
         shell: bash
         run: |
@@ -85,6 +89,32 @@ jobs:
           else
             python3 utils/patches.py apply build/src patches/
           fi
+
+      # ---- IMPORTANT: everything below that needs to fetch from Google's
+      # real servers (gn, sysroot, rust toolchain) MUST run BEFORE domain
+      # substitution. Domain substitution rewrites googleapis.com etc. into
+      # fake placeholder domains, which breaks any script still trying to
+      # download from them. ----
+
+      - name: Bootstrap gn from source (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: |
+          python3 tools/gn/bootstrap/bootstrap.py -o out/Default/gn --skip-generate-buildfiles
+          echo "$PWD/out/Default" >> "$GITHUB_PATH"
+
+      - name: Install sysroot (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: python3 build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
+
+      - name: Install Rust toolchain (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: python3 tools/rust/update_rust.py
 
       - name: Domain substitution
         shell: bash
@@ -107,24 +137,6 @@ jobs:
           cp flags.gn build/src/out/Default/args.gn
           echo 'target_os = "linux"' >> build/src/out/Default/args.gn
 
-      - name: Debug - network sanity check (Linux)
-        if: matrix.platform == 'linux'
-        shell: bash
-        run: |
-          echo "=== DNS resolution test ==="
-          getent hosts commondatastorage.googleapis.com || echo "DNS FAILED"
-          echo "=== curl test ==="
-          curl -Is https://commondatastorage.googleapis.com --max-time 10 || echo "CURL FAILED"
-
-      - name: Install Rust toolchain (Linux)
-        if: matrix.platform == 'linux'
-        shell: bash
-        working-directory: build/src
-        run: |
-          python3 tools/rust/update_rust.py
-          echo "=== rust-toolchain dir contents ==="
-          find third_party/rust-toolchain -maxdepth 2 2>/dev/null || echo "directory does not exist"
-
       - name: Configure GN args (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
@@ -145,34 +157,6 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path build\src\out\Default\extensions | Out-Null
           Copy-Item custom\external-extensions\*.json build\src\out\Default\extensions\
-
-      - name: Bootstrap depot_tools
-        shell: bash
-        run: gclient
-
-      - name: Debug - find gn binary
-        shell: bash
-        run: |
-          echo "=== downloads.ini content ==="
-          cat downloads.ini
-          echo "=== buildtools dir ==="
-          find build/src/buildtools -maxdepth 3 2>/dev/null || echo "no buildtools dir"
-          echo "=== any gn-like files ==="
-          find build/src -iname "gn*" -not -path "*/third_party/*" 2>/dev/null || true
-
-      - name: Bootstrap gn from source (Linux)
-        if: matrix.platform == 'linux'
-        shell: bash
-        working-directory: build/src
-        run: |
-          python3 tools/gn/bootstrap/bootstrap.py -o out/Default/gn --skip-generate-buildfiles
-          echo "$PWD/out/Default" >> "$GITHUB_PATH"
-
-      - name: Install sysroot (Linux)
-        if: matrix.platform == 'linux'
-        shell: bash
-        working-directory: build/src
-        run: python3 build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
 
       - name: Generate build files (gn gen)
         shell: bash
