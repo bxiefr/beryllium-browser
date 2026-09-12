@@ -107,6 +107,15 @@ jobs:
           cp flags.gn build/src/out/Default/args.gn
           echo 'target_os = "linux"' >> build/src/out/Default/args.gn
 
+      - name: Debug - network sanity check (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          echo "=== DNS resolution test ==="
+          getent hosts commondatastorage.googleapis.com || echo "DNS FAILED"
+          echo "=== curl test ==="
+          curl -Is https://commondatastorage.googleapis.com --max-time 10 || echo "CURL FAILED"
+
       - name: Install Rust toolchain (Linux)
         if: matrix.platform == 'linux'
         shell: bash
