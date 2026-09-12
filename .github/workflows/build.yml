@@ -130,6 +130,17 @@ jobs:
         run: |
           grep -A 10 "'src/third_party/node/linux'" DEPS || echo "not found in DEPS"
 
+      - name: Install Node.js binary (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: |
+          mkdir -p third_party/node/linux
+          curl -L -o third_party/node/linux/node-linux-x64.tar.gz \
+            https://storage.googleapis.com/chromium-nodejs/744e6926ffdd4a4fb2080ae2b9ce4575490261e7
+          tar -xzf third_party/node/linux/node-linux-x64.tar.gz -C third_party/node/linux
+          ls third_party/node/linux/
+
       - name: Domain substitution
         shell: bash
         run: |
