@@ -101,6 +101,7 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
+          mkdir -p out/Default
           python3 tools/gn/bootstrap/bootstrap.py -o out/Default/gn --skip-generate-buildfiles
           echo "$PWD/out/Default" >> "$GITHUB_PATH"
 
