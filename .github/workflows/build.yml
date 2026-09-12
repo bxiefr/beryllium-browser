@@ -134,7 +134,12 @@ jobs:
       - name: Prune binaries
         shell: bash
         run: |
+          echo "=== BEFORE prune: rust VERSION exists? ==="
+          test -f build/src/third_party/rust-toolchain/VERSION && echo "YES" || echo "NO"
+          grep -i "rust-toolchain" pruning.list || echo "not found in pruning.list"
           python3 utils/prune_binaries.py build/src pruning.list
+          echo "=== AFTER prune: rust VERSION exists? ==="
+          test -f build/src/third_party/rust-toolchain/VERSION && echo "YES" || echo "NO"
 
       - name: Configure GN args (Linux)
         if: matrix.platform == 'linux'
