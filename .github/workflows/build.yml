@@ -115,12 +115,13 @@ jobs:
         if: matrix.platform == 'linux'
         shell: bash
         working-directory: build/src
-        run: |
-          python3 tools/rust/update_rust.py
-          echo "=== rust-toolchain dir after install ==="
-          find third_party/rust-toolchain -maxdepth 2 2>/dev/null || echo "directory does not exist"
-          echo "=== searching whole tree for VERSION file ==="
-          find . -path ./out -prune -o -iname "VERSION" -path "*rust*" -print 2>/dev/null
+        run: python3 tools/rust/update_rust.py
+
+      - name: Install clang toolchain (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: python3 tools/clang/scripts/update.py
 
       - name: Domain substitution
         shell: bash
