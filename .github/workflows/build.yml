@@ -141,6 +141,13 @@ jobs:
           tar -xzf third_party/node/linux/node-linux-x64.tar.gz -C third_party/node/linux
           ls third_party/node/linux/
 
+      - name: Debug - find go fetch entry
+        if: matrix.platform == 'linux'
+        shell: bash
+        working-directory: build/src
+        run: |
+          grep -A 10 "'src/third_party/dawn/tools/golang" DEPS || echo "not found in DEPS"
+
       - name: Domain substitution
         shell: bash
         run: |
