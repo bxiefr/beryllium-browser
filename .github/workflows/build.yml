@@ -128,7 +128,8 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          find third_party/node -maxdepth 2 -iname "*.py" 2>/dev/null || echo "no third_party/node dir"
+          find third_party/node -maxdepth 3 -iname "*.sha1" 2>/dev/null || echo "no sha1 files"
+          find third_party/node/linux -maxdepth 2 2>/dev/null || echo "no linux dir"
 
       - name: Domain substitution
         shell: bash
