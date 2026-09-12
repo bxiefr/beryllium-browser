@@ -128,8 +128,7 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          grep -A 3 "'src/third_party/node/linux'" DEPS || echo "not found in DEPS"
-          cat third_party/node/node.py | grep -i version || true
+          grep -A 10 "'src/third_party/node/linux'" DEPS || echo "not found in DEPS"
 
       - name: Domain substitution
         shell: bash
