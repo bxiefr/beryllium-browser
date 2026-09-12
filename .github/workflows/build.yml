@@ -128,8 +128,8 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          find third_party/node -maxdepth 3 -iname "*.sha1" 2>/dev/null || echo "no sha1 files"
-          find third_party/node/linux -maxdepth 2 2>/dev/null || echo "no linux dir"
+          grep -A 3 "'src/third_party/node/linux'" DEPS || echo "not found in DEPS"
+          cat third_party/node/node.py | grep -i version || true
 
       - name: Domain substitution
         shell: bash
