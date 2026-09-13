@@ -146,9 +146,7 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          python3 third_party/dawn/tools/fetch_dawn_dependencies.py --help || true
-          echo "=== dawn DEPS golang mentions ==="
-          grep -n -i "golang" third_party/dawn/DEPS || echo "not found in dawn DEPS"
+          sed -n '540,565p' third_party/dawn/DEPS
 
       - name: Domain substitution
         shell: bash
