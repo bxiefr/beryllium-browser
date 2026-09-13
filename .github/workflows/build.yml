@@ -146,9 +146,9 @@ jobs:
         shell: bash
         working-directory: build/src
         run: |
-          grep -n -i "golang" DEPS || echo "not found in DEPS"
-          grep -n -i "golang" third_party/dawn/tools/golang/*.py 2>/dev/null || echo "no golang scripts"
-          find third_party/dawn/tools -maxdepth 2 2>/dev/null || echo "no dawn tools dir"
+          python3 third_party/dawn/tools/fetch_dawn_dependencies.py --help || true
+          echo "=== dawn DEPS golang mentions ==="
+          grep -n -i "golang" third_party/dawn/DEPS || echo "not found in dawn DEPS"
 
       - name: Domain substitution
         shell: bash
